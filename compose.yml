@@ -1,0 +1,37 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    platform: linux/arm64
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+    ports:
+      - "8201:11434"
+    volumes:
+      - ./volumes/ollama/_ollama:/root/.ollama:z
+    networks:
+      - nocodenation_playground_network
+
+  open_webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: open_webui
+    restart: unless-stopped
+    platform: linux/arm64
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+      OLLAMA_API_BASE_URL: "http://ollama:11434/api"
+      HF_TOKEN: "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"
+    ports:
+      - "8200:8080"
+    volumes:
+      - ./volumes/open_webui:/app/backend/data:z
+    depends_on:
+      - ollama
+    networks:
+      - nocodenation_playground_network
+
+networks:
+  nocodenation_playground_network:
+    name: nocodenation_playground_network
+    external: true
