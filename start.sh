@@ -11,6 +11,17 @@ else
   echo "Network '${NETWORK_NAME}' already exists, skipping."
 fi
 
+echo "Creating volumes folder"
+MODEL_CACHE_VOLUME="./volumes"
+
+if [[ -d "./volumes" ]]; then
+  echo "Persisted volume './volumes' already exists. Skipping creation"
+else
+  mkdir -p ./volumes
+  chmod -R 777 ./volumes
+  chown -R 1000:1000 ./volumes
+fi
+
 echo "Copying compose.yml to tmp.compose.yml..."
 cp compose.yml tmp.compose.yml
 
@@ -43,9 +54,10 @@ if [[ "${USE_GPU_VAR}" == "nvidia" ]]; then
     print "      resources:"
     print "        reservations:"
     print "          devices:"
-    print "            - driver: nvidia"
-    print "              count: all"
-    print "              capabilities: [gpu]"
+    print "            - capabilities: [\"gpu\"]"
+    print "              driver: cdi"
+    print "              device_ids:"
+    print "                - nvidia.com/gpu=all"
     next
   }
   { print }' tmp.compose.yml > tmp.compose.yml.tmp && mv tmp.compose.yml.tmp tmp.compose.yml
@@ -60,9 +72,10 @@ if [[ "${USE_GPU_VAR}" == "nvidia" ]]; then
     print "      resources:"
     print "        reservations:"
     print "          devices:"
-    print "            - driver: nvidia"
-    print "              count: all"
-    print "              capabilities: [gpu]"
+    print "            - capabilities: [\"gpu\"]"
+    print "              driver: cdi"
+    print "              device_ids:"
+    print "                - nvidia.com/gpu=all"
     next
   }
   { print }' tmp.compose.yml > tmp.compose.yml.tmp && mv tmp.compose.yml.tmp tmp.compose.yml
