@@ -3,7 +3,7 @@ services:
     image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
-    platform: linux/arm64
+    platform: linux/amd64
     environment:
       OLLAMA_HOST: "0.0.0.0"
     ports:
@@ -17,7 +17,7 @@ services:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: open_webui
     restart: unless-stopped
-    platform: linux/arm64
+    platform: linux/amd64
     environment:
       OLLAMA_BASE_URL: "http://ollama:11434"
       OLLAMA_API_BASE_URL: "http://ollama:11434/api"
@@ -25,6 +25,25 @@ services:
       - "8200:8080"
     volumes:
       - ./volumes/open_webui:/app/backend/data:z
+    depends_on:
+      - ollama
+    networks:
+      - nocodenation_playground_network
+
+  speaches:
+    container_name: speaches
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    restart: unless-stopped
+    platform: linux/amd64
+    environment:
+      LOG_LEVEL: "debug"
+      CHAT_COMPLETION_BASE_URL: "http://ollama:11434/v1"
+      CHAT_COMPLETION_API_KEY: "does-not-matter"
+      UVICORN_PORT: "8202"
+    ports:
+      - "8202:8202"
+    volumes:
+      - ./volumes/speaches/hf_hub_cache:/home/ubuntu/.cache/huggingface:z
     depends_on:
       - ollama
     networks:
