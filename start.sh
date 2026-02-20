@@ -77,21 +77,24 @@ else
   chmod -R 777 ./volumes/speaches/hf_hub_cache
   chown -R 1000:1000 ./volumes/speaches/hf_hub_cache
 
-  MODEL_CACHE_DIR="./volumes/speaches/hf_hub_cache/hub/models--JhonVanced--faster-whisper-large-v3"
-  if [[ -d "${MODEL_CACHE_DIR}" ]]; then
-    echo "Model JhonVanced/faster-whisper-large-v3 already downloaded, skipping."
+  if [[ "${USE_GPU_VAR}" == "nvidia" ]]; then
+    SPEACHES_IMAGE="ghcr.io/speaches-ai/speaches:latest-cuda"
   else
-    if [[ "${USE_GPU_VAR}" == "nvidia" ]]; then
-      SPEACHES_IMAGE="ghcr.io/speaches-ai/speaches:latest-cuda"
-    else
-      SPEACHES_IMAGE="ghcr.io/speaches-ai/speaches:latest-cpu"
-    fi
-    echo "Pre-downloading JhonVanced/faster-whisper-large-v3 using ${SPEACHES_IMAGE}..."
-    docker run --rm \
-      -v "$(pwd)/volumes/speaches/hf_hub_cache:/home/ubuntu/.cache/huggingface:z" \
-      "${SPEACHES_IMAGE}" \
-      huggingface-cli download JhonVanced/faster-whisper-large-v3
+    SPEACHES_IMAGE="ghcr.io/speaches-ai/speaches:latest-cpu"
   fi
+  echo "Pre-downloading STT model using ${SPEACHES_IMAGE}..."
+  docker run --rm \
+    --platform "${DOCKER_PLATFORM}" \
+    -v "$(pwd)/volumes/speaches/hf_hub_cache:/home/ubuntu/.cache/huggingface:z" \
+    "${SPEACHES_IMAGE}" \
+    huggingface-cli download JhonVanced/faster-whisper-large-v3
+
+  echo "Pre-downloading TTS model using ${SPEACHES_IMAGE}..."
+  docker run --rm \
+    --platform "${DOCKER_PLATFORM}" \
+    -v "$(pwd)/volumes/speaches/hf_hub_cache:/home/ubuntu/.cache/huggingface:z" \
+    "${SPEACHES_IMAGE}" \
+    huggingface-cli download speaches-ai/Kokoro-82M-v1.0-ONNX
 fi
 
 echo "Starting services..."
